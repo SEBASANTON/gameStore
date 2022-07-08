@@ -10,23 +10,29 @@ const {
 } = require('../controllers/users.controller');
 
 //Middlewares
-const { userExists } = require('../middlewares/users.middleware');
 const {
   createUserValidators,
-  updateUserValidators
 } = require('../middlewares/validatiors.middleware');
+const { userExists } = require('../middlewares/users.middleware');
+const {
+  protectSesssion,
+  protectUser,
+} = require('../middlewares/auth.middleware');
 
 const router = express.Router();
 
-router.route('/').get(getAllUsers);
-
 router.route('/signup').post(createUserValidators, createUser);
 
-router.route('/login').post()
+router.post('/login', login);
+
+router.use(protectSesssion);
+
+router.route('/').get(getAllUsers);
 
 router
+  .use('/:id', userExists)
   .route('/:id')
-  .patch( updateUserValidators, userExists, updateUser)
-  .delete(userExists, deleteUser);
+  .patch(protectUser, updateUser)
+  .delete(protectUser, deleteUser);
 
 module.exports = { usersRouter: router };

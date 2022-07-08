@@ -65,12 +65,13 @@ const deleteGame = catchAsync(async (req, res, next) => {
 const createReview = catchAsync(async (req, res, next) => {
   const { gameId } = req.params;
   const { comment } = req.body;
+  const { sessionUser } = req;
 
   const game = await Game.findOne({ where: { id: gameId, status: 'active' } });
 
   if (game) {
     const newReview = await Review.create({
-      userId: 3,
+      userId: sessionUser.id,
       gameId,
       comment,
     });

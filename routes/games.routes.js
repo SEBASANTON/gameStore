@@ -15,10 +15,15 @@ const {
   createGameValidators,
   updateGameValidators,
 } = require('../middlewares/validatiors.middleware');
+const { protectSesssion } = require('../middlewares/auth.middleware');
 
 const router = express.Router();
 
-router.route('/').get(getAllGame).post(createGameValidators, createGame);
+router.route('/').get(getAllGame);
+
+router.use(protectSesssion);
+
+router.post('/', createGameValidators, createGame);
 
 router
   .route('/:id')

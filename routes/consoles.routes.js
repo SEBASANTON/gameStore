@@ -15,13 +15,15 @@ const {
   createConsoleValidators,
   updateConsoleValidators,
 } = require('../middlewares/validatiors.middleware');
+const { protectSesssion } = require('../middlewares/auth.middleware');
 
 const router = express.Router();
 
-router
-  .route('/')
-  .get(getAllConsole)
-  .post(createConsoleValidators, createConsole);
+router.get('/', getAllConsole);
+
+router.use(protectSesssion);
+
+router.post('/', createConsoleValidators, createConsole);
 
 router.post('/assign-game', assignGamesToConsole);
 

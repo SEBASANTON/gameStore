@@ -1,10 +1,15 @@
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const dotenv = require('dotenv');
 
 //Models
 const { User } = require('../models/user.model');
 
 //Utils
 const { catchAsync } = require('../util/catchAsync');
+const { AppError } = require('../util/appError');
+
+dotenv.config({ path: './config.env' });
 
 const getAllUsers = catchAsync(async (req, res, next) => {
   const users = await User.findAll({
@@ -40,13 +45,37 @@ const createUser = catchAsync(async (req, res, next) => {
   });
 });
 
-
 const login = catchAsync(async (req, res, next) => {
+  const { email, password } = req.body;
+
+  const user = await User.findOne({
+    where: {
+      email,
+      status: 'active',
+    },
+  });
+
+  if (!user) {
+    return next(new AppError('Credentials invalid', 400));
+  }
+
+  //Validate password
+  const isPasswordValid = await bcrypt.compare(password, user.password);
+
+  if (!isPasswordValid) {
+    return next(new AppError('Credentials invalid', 400));
+  }
+
+  //Generate JWT
+  const token = await jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
+    expiresIn: '30d',
+  });
+
   res.status(200).json({
     status: 'success',
+    token,
   });
 });
-
 
 const updateUser = catchAsync(async (req, res, next) => {
   const { user } = req;
